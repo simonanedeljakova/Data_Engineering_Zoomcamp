@@ -1,7 +1,7 @@
 ## Workshop file
 [01-docker-terraform/docker-sql](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/d8854a70547c60a49233c7c124bb7fc9e919cb61/01-docker-terraform/docker-sql)
 
-## Introduction
+## 01. INTRODUCTION
 1. create repository
    - README - on
    - public
