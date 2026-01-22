@@ -243,3 +243,75 @@ COPY pipeline.py pipeline.py
 ENTRYPOINT ["uv", "run", "python", "pipeline.py"]
 ```
 
+## 4. POSTGRESQL WITH DOCKER
+- real data engineering
+
+## Running PostgreSQL in a container
+- we will use the example folder ny_taxi_postgres_data
+```bash
+docker run -it --rm \
+  -e POSTGRES_USER="root" \
+  -e POSTGRES_PASSWORD="root" \
+  -e POSTGRES_DB="ny_taxi" \
+  -v ny_taxi_postgres_data:/var/lib/postgresql \
+  -p 5432:5432 \
+  postgres:18
+```
+
+Explanation of Parameters:
+- -e sets environment variables (user, password, database name)
+- -v ny_taxi_postgres_data:/var/lib/postgresql creates a named volume
+      - Docker manages this volume automatically
+      - Data persists even after container is removed
+      - Volume is stored in Docker's internal storage
+- -p 5432:5432 maps port 5432 from container to host
+- postgres:18 uses PostgreSQL version 18 (latest as of Dec 2025)
+
+Alternative Approach - Bind Mount
+  - create the directory, then map it:
+
+  ```bash
+  mkdir ny_taxi_postgres_data
+
+docker run -it \
+  -e POSTGRES_USER="root" \
+  -e POSTGRES_PASSWORD="root" \
+  -e POSTGRES_DB="ny_taxi" \
+  -v $(pwd)/ny_taxi_postgres_data:/var/lib/postgresql \
+  -p 5432:5432 \
+  postgres:18
+  ```
+
+Named Volume vs Bind Mount
+- Named volume (name:/path): Managed by Docker, easier
+- Bind mount (/host/path:/container/path): Direct mapping to host filesystem, more control
+
+## Connecting to PostgreSQL
+- Once the container is running, we can log into our database with pgcli
+
+```bash
+uv add --dev pgcli
+```
+
+Use it to connect to Postgres:
+```bash
+uv run pgcli -h localhost -p 5432 -u root -d ny_taxi
+```
+
+## Basic SQL Commands
+```bash
+-- List tables
+\dt
+
+-- Create a test table
+CREATE TABLE test (id INTEGER, name VARCHAR(50));
+
+-- Insert data
+INSERT INTO test VALUES (1, 'Hello Docker');
+
+-- Query data
+SELECT * FROM test;
+
+-- Exit
+\q
+```
