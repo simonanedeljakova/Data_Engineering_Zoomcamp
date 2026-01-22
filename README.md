@@ -5,11 +5,11 @@ Workshop Codespaces
 [01-docker-terraform/docker-sql](https://github.com/DataTalksClub/data-engineering-zoomcamp/tree/d8854a70547c60a49233c7c124bb7fc9e919cb61/01-docker-terraform/docker-sql)
 
 ## 1. INTRODUCTION
-1. create repository
+1. Create repository
    - README - on
    - public
    - gitignore - Python
-2. code -> create codespace on main
+2. Code -> create codespace on main
    - [my codespace]([https://probable-chainsaw-v69xxxvvvq74fxx7j.github.dev])
 3. Code history
 ```bash
@@ -45,7 +45,6 @@ Python version check
 python3 --version
 ```
 
-
 ```bash
 docker run -it ubuntu
 python3 -V
@@ -53,8 +52,7 @@ python3 -V
 
 ## Stateless containers
 - when you exit the container and use it again, the changes are gone
-
-But, this is not _completely_ correct. The state is saved somewhere. We can see stopped containers:
+- but, this is not _completely_ correct. The state is saved somewhere. We can see stopped containers:
 ```bash
 docker ps -a
 ```
@@ -190,7 +188,7 @@ WORKDIR: Set working directory
 COPY: Copy files into the image
 ENTRYPOINT: Default command to run
 
-NOTE:
+Note:
 ```bash
 > rm Dockerfile
 > cat > Dockerfile << 'EOF'
@@ -282,6 +280,14 @@ docker run -it \
   postgres:18
   ```
 
+Add path:
+```bash
+> source /workspaces/Data_Engineering_Zoomcamp/pipeline/.venv/bin/activate
+(pipeline) > ls
+(pipeline) > cd ./pipeline/
+(pipeline) > uv add --dev pgcli
+```
+
 Named Volume vs Bind Mount
 - Named volume (name:/path): Managed by Docker, easier
 - Bind mount (/host/path:/container/path): Direct mapping to host filesystem, more control
@@ -296,6 +302,14 @@ uv add --dev pgcli
 Use it to connect to Postgres:
 ```bash
 uv run pgcli -h localhost -p 5432 -u root -d ny_taxi
+```
+
+Note: password is root (not visible in command)
+
+Check tables:
+
+```bash
+\dt
 ```
 
 ## Basic SQL Commands
@@ -314,4 +328,208 @@ SELECT * FROM test;
 
 -- Exit
 \q
+```
+
+## 5. DATA INGESTION - NYC TAXI DATASET
+- We will now create a Jupyter Notebook notebook.ipynb file which we will use to read a CSV file and export it to Postgres.
+
+## Setting up Jupyter
+```bash
+uv add --dev jupyter
+uv run jupyter notebook
+```
+
+## Nest steps
+- go to the PORT
+- open 8888
+- copy token from results (e371ec08f1268779d28207866a7478731ab4bd8206839c37)
+- add token in the website (password token)
+- you will be redirected to Jupyter
+- create NEW - Python 3 file
+- rename to notebok
+- show - remowe header
+- path to Jupyter: df = pd.read_csv('https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz)
+
+## Explore data
+Jupyter notebook:
+```bash
+import pandas as pd
+
+prefix = 'https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow'
+url = f'{prefix}/yellow_tripdata_2021-01.csv.gz'
+url
+
+ADD INSTRUCTION PART TO AVOID WARNING
+
+df = pd.read_csv(url)
+
+df.head()
+
+df.dtypes
+
+df.shape
+```
+
+## Handling data types
+We have a warning: /tmp/ipykernel_25483/2933316018.py:1: DtypeWarning: Columns (6) have mixed types. Specify dtype option on import or set low_memory=False.
+
+Instructions:
+```bash
+dtype = {
+    "VendorID": "Int64",
+    "passenger_count": "Int64",
+    "trip_distance": "float64",
+    "RatecodeID": "Int64",
+    "store_and_fwd_flag": "string",
+    "PULocationID": "Int64",
+    "DOLocationID": "Int64",
+    "payment_type": "Int64",
+    "fare_amount": "float64",
+    "extra": "float64",
+    "mta_tax": "float64",
+    "tip_amount": "float64",
+    "tolls_amount": "float64",
+    "improvement_surcharge": "float64",
+    "total_amount": "float64",
+    "congestion_surcharge": "float64"
+}
+
+parse_dates = [
+    "tpep_pickup_datetime",
+    "tpep_dropoff_datetime"
+]
+
+df = pd.read_csv(
+    url,
+    nrows=100,
+    dtype=dtype,
+    parse_dates=parse_dates
+)
+```
+
+## Ingesting data into Postrges
+In the Jupyter notebook, we create code to:
+1. Download the CSV file
+2. Read it in chunks with pandas
+3. Convert datetime columns
+4. Insert data into PostgreSQL using SQLAlchemy
+
+Exact steps:
+- install SQLAlchemy
+- create database connection
+- get DDL schema
+   - output
+- create table
+
+Go back to Github pyproject.toml
+```bash
+> ls
+README.md  pipeline  test
+> cd ./pipeline/
+> uv run pgcli -h localhost -p 5432 -u root -d ny_taxi
+Password for root: 
+Using local time zone Etc/UTC (server uses Etc/UTC)
+Use `set time zone <TZ>` to override, or set `use_local_timezone = False` in the config
+Server: PostgreSQL 18.1 (Debian 18.1-1.pgdg13+2)
+Version: 4.4.0
+Home: http://pgcli.com
+root@localhost:ny_taxi> \dt
++--------+------------------+-------+-------+
+| Schema | Name             | Type  | Owner |
+|--------+------------------+-------+-------|
+| public | test             | table | root  |
+| public | yellow_taxi_data | table | root  |
++--------+------------------+-------+-------+
+SELECT 2
+Time: 0.014s
+root@localhost:ny_taxi>
+```
+## Ingesting data in chunks
+- we don't want to insert all the data at once. Let's do it in batches and use an iterator for that
+
+```bash
+df_iter = pd.read_csv(
+    dtype=dtype,
+    parse_dates=parse_dates,
+    iterator=True,
+    chunksize=100000
+)
+```
+- iterate over chunks
+- inserting data
+- complete ingestion loop
+- alternative approach (without first flag)
+- adding progress bar
+- verify the data
+
+## 6. INGESTION SCRIPT
+- let's convert the notebook to a Python script
+
+## Convert notebook to script (Jupyter)
+```bash
+uv run jupyter nbconvert --to=script notebook.ipynb
+mv notebook.py ingest_data.py
+```
+
+## Complete ingestion script
+- See the pipeline/ directory for the complete script with click integration. Here's the core structure:
+```bash
+import pandas as pd
+from sqlalchemy import create_engine
+from tqdm.auto import tqdm
+
+dtype = {
+    "VendorID": "Int64",
+    "passenger_count": "Int64",
+    "trip_distance": "float64",
+    "RatecodeID": "Int64",
+    "store_and_fwd_flag": "string",
+    "PULocationID": "Int64",
+    "DOLocationID": "Int64",
+    "payment_type": "Int64",
+    "fare_amount": "float64",
+    "extra": "float64",
+    "mta_tax": "float64",
+    "tip_amount": "float64",
+    "tolls_amount": "float64",
+    "improvement_surcharge": "float64",
+    "total_amount": "float64",
+    "congestion_surcharge": "float64"
+}
+
+parse_dates = [
+    "tpep_pickup_datetime",
+    "tpep_dropoff_datetime"
+]
+```
+
+## Click integration
+- the script uses click for command-line argument parsing:
+```bash
+import click
+
+@click.command()
+@click.option('--pg-user', default='root', help='PostgreSQL user')
+@click.option('--pg-pass', default='root', help='PostgreSQL password')
+@click.option('--pg-host', default='localhost', help='PostgreSQL host')
+@click.option('--pg-port', default=5432, type=int, help='PostgreSQL port')
+@click.option('--pg-db', default='ny_taxi', help='PostgreSQL database name')
+@click.option('--target-table', default='yellow_taxi_data', help='Target table name')
+def run(pg_user, pg_pass, pg_host, pg_port, pg_db, target_table):
+    # Ingestion logic here
+    pass
+```
+
+## Running the script
+- the script reads data in chunks (100,000 rows at a time) to handle large files efficiently without running out of memory.
+
+Example usage:
+```bash
+uv run python ingest_data.py \
+  --pg-user=root \
+  --pg-pass=root \
+  --pg-host=localhost \
+  --pg-port=5432 \
+  --pg-db=ny_taxi \
+  --target-table=yellow_taxi_trips
 ```
