@@ -8,9 +8,13 @@
    - gitignore - Python
 2. code -> create codespace on main
    - [my codespace]([https://probable-chainsaw-v69xxxvvvq74fxx7j.github.dev])
+3. Code history
+```bash
+   history | tail
+```
 
 ## Basic Docker commands
-Python version:
+Python version (inside docker):
 ```bash
   python -V
 ```
@@ -38,4 +42,12 @@ Python version check
 python3 --version
 ```
 
+
+```bash
+docker run -it ubuntu
+python3 -V
+```
+
+## Stateless containers
+- when you exit the container and use it again, the changes are gone
 
