@@ -84,4 +84,34 @@ python script.py
 -    mapit to a Python container
 -    inside container, run
 
+## 02. VIRTUAL ENVIRONMENT
+- data pipeline - s a service that receives data as input and outputs more data. For example, reading a CSV file, transforming the data somehow and storing it as a table in a PostgreSQL database.
 
+We'll build pipelines that:
+- Download CSV data from the web
+- Transform and clean the data with pandas
+- Load it into PostgreSQL for querying
+- Process data in chunks to handle large files
+
+## Creating pipeline
+First create directory 'pipeline' and inside, create a file pipeline.py
+```bash
+import sys
+print("arguments", sys.argv)
+
+day = int(sys.argv[1])
+print(f"Running pipeline for day {day}")
+```
+
+Then add pandas
+```bash
+import pandas as pd
+
+df = pd.DataFrame({"A": [1, 2], "B": [3, 4]})
+print(df.head())
+
+df.to_parquet(f"output_day_{sys.argv[1]}.parquet")
+```
+
+
+  
