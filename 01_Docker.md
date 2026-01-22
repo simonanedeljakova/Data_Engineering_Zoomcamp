@@ -7,6 +7,16 @@
    - public
    - gitignore - Python
 2. code -> create codespace on main
-   - [my codespace](https://probable-chainsaw-v69xxxvvvq74fxx7j.github.dev)
+   - [my codespace]([https://probable-chainsaw-v69xxxvvvq74fxx7j.github.dev])
+
+Notes
+- persistent minimal prompt: 
+   ```
+   > touch ~/.bashrc
+   > echo 'PS1="> "' > ~/.bashrc
+   > cat ~/.bash
+   .bash_history  .bash_logout   .bashrc        
+   > cat ~/.bashrc
+   PS1="> "
 
 
