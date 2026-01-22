@@ -9,14 +9,33 @@
 2. code -> create codespace on main
    - [my codespace]([https://probable-chainsaw-v69xxxvvvq74fxx7j.github.dev])
 
-Notes
-- persistent minimal prompt: 
-   ```
+## Basic Docker commands
+Python version:
+```bash
+  python -V
+```
+  
+Persistent minimal prompt: 
+```bash
    > touch ~/.bashrc
    > echo 'PS1="> "' > ~/.bashrc
    > cat ~/.bash
    .bash_history  .bash_logout   .bashrc        
    > cat ~/.bashrc
    PS1="> "
+```
+   
+Docker:
+-    gives isolated container
+
+Docker version check
+```bash
+docker --version
+```
+
+Python version check
+```bash
+python3 --version
+```
 
 
