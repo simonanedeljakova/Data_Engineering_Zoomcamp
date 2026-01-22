@@ -7,6 +7,6 @@
    - public
    - gitignore - Python
 2. code -> create codespace on main
-   - [my codespace]()
+   - [my codespace](https://probable-chainsaw-v69xxxvvvq74fxx7j.github.dev)
 
 
