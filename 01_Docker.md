@@ -6,5 +6,7 @@
    - README - on
    - public
    - gitignore - Python
-2. code -> create codespace on main [my codespace](https://effective-sniffle-v69xxxvvvgxwhw4rq.github.dev)
+2. code -> create codespace on main
+   - [my codespace]()
+
 
